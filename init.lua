@@ -9,12 +9,39 @@ local function add_fire(pos)
    					1.5, true, "torches_fire"..tostring(math.random(1,2)) ..".png")
 end
 
+function check_attached_node_fdir(p, n)
+	local def = minetest.registered_nodes[n.name]
+	local d = {x=0, y=0, z=0}
+	if def.paramtype2 == "facedir" then
+		if n.param2 == 0 then
+			d.z = 1
+		elseif n.param2 == 1 then
+			d.x = 1
+		elseif n.param2 == 2 then
+			d.z = -1
+		elseif n.param2 == 3 then
+			d.x = -1
+		end
+	end
+	local p2 = {x=p.x+d.x, y=p.y+d.y, z=p.z+d.z}
+	local nn = minetest.env:get_node(p2).name
+	local def2 = minetest.registered_nodes[nn]
+	if def2 and not def2.walkable then
+		return false
+	end
+	return true
+end
+
 minetest.register_abm({
 	nodenames = {"torches:wand"},
 	interval = 1,
 	chance = 1,
 	action = function(pos)
 		add_fire(pos)
+		if not check_attached_node_fdir(pos, minetest.env:get_node(pos)) then
+			minetest.env:dig_node(pos)
+			minetest.env:add_item(pos, {name="default:torch"})
+		end
 	end
 })
 
@@ -24,6 +51,14 @@ minetest.register_abm({
 	chance = 1,
 	action = function(pos)	
 		add_fire(pos)
+	pos.y = pos.y-1
+	local nn = minetest.env:get_node(pos).name
+	local def2 = minetest.registered_nodes[nn]
+	if def2 and not def2.walkable then
+		pos.y = pos.y+1
+		minetest.env:dig_node(pos)
+		minetest.env:add_item(pos, {name="default:torch"})
+	end
 	end
 })
 
@@ -51,11 +86,14 @@ minetest.register_craftitem(":default:torch", {
 	wield_scale = {x=1,y=1,z=1+1/16},
 	liquids_pointable = false,
    	on_place = function(itemstack, placer, pointed_thing)
+		if pointed_thing.type ~= "node" or string.find(minetest.env:get_node(pointed_thing.above).name, "torch") then
+			return itemstack
+		end
 		local above = pointed_thing.above
 		local under = pointed_thing.under
 		local wdir = minetest.dir_to_wallmounted({x = under.x - above.x, y = under.y - above.y, z = under.z - above.z})
 		if wdir == 1 then
-			minetest.env:add_node(above, {name = "torches:floor"})			
+			minetest.env:add_node(above, {name = "torches:floor"})		
 		else
 			minetest.env:add_node(above, {name = "torches:wand", param2 = is_wall(wdir)})
 		end
@@ -82,7 +120,7 @@ minetest.register_node("torches:floor", {
 	drop = "default:torch",
 	walkable = false,
 	light_source = 13,
-	groups = {choppy=2,dig_immediate=3,flammable=1,attached_node=1,not_in_creative_inventory=1},
+	groups = {choppy=2,dig_immediate=3,flammable=1,not_in_creative_inventory=1},
 	legacy_wallmounted = true,
 	node_box = {
 		type = "fixed",
@@ -119,7 +157,7 @@ minetest.register_node("torches:wand", {
 	sunlight_propagates = true,
 	walkable = false,
 	light_source = 13,
-	groups = {choppy=2,dig_immediate=3,flammable=1,attached_node=1,not_in_creative_inventory=1},
+	groups = {choppy=2,dig_immediate=3,flammable=1,not_in_creative_inventory=1},
 	legacy_wallmounted = true,
 	drop = "default:torch",
 	node_box = {
