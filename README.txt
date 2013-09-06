@@ -1,6 +1,6 @@
 Minetest mod "Torches"
 =======================
-version: 1.1
+version: 1.2
 
 License of source code and textures: WTFPL
 -----------------------------------------
