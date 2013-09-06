@@ -40,7 +40,6 @@ minetest.register_abm({
 		add_fire(pos)
 		if not check_attached_node_fdir(pos, minetest.env:get_node(pos)) then
 			minetest.env:dig_node(pos)
-			minetest.env:add_item(pos, {name="default:torch"})
 		end
 	end
 })
@@ -57,7 +56,6 @@ minetest.register_abm({
 	if def2 and not def2.walkable then
 		pos.y = pos.y+1
 		minetest.env:dig_node(pos)
-		minetest.env:add_item(pos, {name="default:torch"})
 	end
 	end
 })
@@ -92,6 +90,10 @@ minetest.register_craftitem(":default:torch", {
 		local above = pointed_thing.above
 		local under = pointed_thing.under
 		local wdir = minetest.dir_to_wallmounted({x = under.x - above.x, y = under.y - above.y, z = under.z - above.z})
+		local u_n = minetest.get_node(under)
+		if u_n and not minetest.registered_nodes[u_n.name].walkable then above = under end
+		local u_n = minetest.get_node(above)
+		if u_n and minetest.registered_nodes[u_n.name].walkable then return itemstack end
 		if wdir == 1 then
 			minetest.env:add_node(above, {name = "torches:floor"})		
 		else
@@ -129,7 +131,10 @@ minetest.register_node("torches:floor", {
 	selection_box = {
 		type = "fixed",
 		fixed = {-1/16, -0.5, -1/16, 1/16, 2/16, 1/16},
-	}
+	},
+	after_dig_node = function(pos, oldnode, oldmetadata, digger)
+		if not digger:is_player() then minetest.add_item(pos, {name="default:torch"}) end
+	end,
 })
 
 local wall_ndbx = {
@@ -166,8 +171,11 @@ minetest.register_node("torches:wand", {
 	},
 	selection_box = {
 		type = "fixed",
-		fixed =	wall_ndbx
+		fixed =	{-1/16, -6/16, 7/16, 1/16, 2/16, 2/16},
 	},
+	after_dig_node = function(pos, oldnode, oldmetadata, digger)
+		if not digger:is_player() then minetest.add_item(pos, {name="default:torch"}) end
+	end,
 
 
 })
