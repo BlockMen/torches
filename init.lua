@@ -1,3 +1,5 @@
+local VIEW_DISTANCE = 13 -- if player is near that distance flames are shown
+
 local null = {x=0, y=0, z=0}
 --fire_particles
 local function add_fire(pos)
@@ -32,14 +34,26 @@ function check_attached_node_fdir(p, n)
 	return true
 end
 
+local function player_near(pos)
+	for  _,object in ipairs(minetest.env:get_objects_inside_radius(pos, VIEW_DISTANCE)) do
+		if object:is_player() then
+			return true
+		end
+	end
+
+	return false
+end
+
 minetest.register_abm({
 	nodenames = {"torches:wand"},
 	interval = 1,
 	chance = 1,
 	action = function(pos)
-		add_fire(pos)
+		if player_near(pos) then
+			add_fire(pos)
+		end
 		if not check_attached_node_fdir(pos, minetest.env:get_node(pos)) then
-			minetest.env:dig_node(pos)
+			minetest.dig_node(pos)
 		end
 	end
 })
@@ -49,13 +63,15 @@ minetest.register_abm({
 	interval = 1,
 	chance = 1,
 	action = function(pos)	
-		add_fire(pos)
+		if player_near(pos) then
+			add_fire(pos)
+		end
 	pos.y = pos.y-1
 	local nn = minetest.env:get_node(pos).name
 	local def2 = minetest.registered_nodes[nn]
 	if def2 and not def2.walkable then
 		pos.y = pos.y+1
-		minetest.env:dig_node(pos)
+		minetest.dig_node(pos)
 	end
 	end
 })
