@@ -11,6 +11,7 @@ local function add_fire(pos)
    					1.5, true, "torches_fire"..tostring(math.random(1,2)) ..".png")
 end
 
+--help functions
 function check_attached_node_fdir(p, n)
 	local def = minetest.registered_nodes[n.name]
 	local d = {x=0, y=0, z=0}
@@ -34,49 +35,6 @@ function check_attached_node_fdir(p, n)
 	return true
 end
 
-local function player_near(pos)
-	for  _,object in ipairs(minetest.env:get_objects_inside_radius(pos, VIEW_DISTANCE)) do
-		if object:is_player() then
-			return true
-		end
-	end
-
-	return false
-end
-
-minetest.register_abm({
-	nodenames = {"torches:wand"},
-	interval = 1,
-	chance = 1,
-	action = function(pos)
-		if player_near(pos) then
-			add_fire(pos)
-		end
-		if not check_attached_node_fdir(pos, minetest.env:get_node(pos)) then
-			minetest.dig_node(pos)
-		end
-	end
-})
-
-minetest.register_abm({
-	nodenames = {"torches:floor"},
-	interval = 1,
-	chance = 1,
-	action = function(pos)	
-		if player_near(pos) then
-			add_fire(pos)
-		end
-	pos.y = pos.y-1
-	local nn = minetest.env:get_node(pos).name
-	local def2 = minetest.registered_nodes[nn]
-	if def2 and not def2.walkable then
-		pos.y = pos.y+1
-		minetest.dig_node(pos)
-	end
-	end
-})
-
---help function
 local function is_wall(wallparam)
 	if wallparam == 0 then return false end
 	local para2 = 0
@@ -91,6 +49,60 @@ local function is_wall(wallparam)
 	end
 	return para2
 end
+
+local function player_near(pos)
+	for  _,object in ipairs(minetest.env:get_objects_inside_radius(pos, VIEW_DISTANCE)) do
+		if object:is_player() then
+			return true
+		end
+	end
+
+	return false
+end
+
+-- abms for flames
+minetest.register_abm({
+	nodenames = {"torches:wand"},
+	interval = 1,
+	chance = 1,
+	action = function(pos)
+		if player_near(pos) then
+			add_fire(pos)
+		end
+	end
+})
+
+minetest.register_abm({
+	nodenames = {"torches:floor"},
+	interval = 1,
+	chance = 1,
+	action = function(pos)
+		if player_near(pos) then
+			add_fire(pos)
+		end
+	end
+})
+
+-- convert old torches and remove ceiling placed
+minetest.register_abm({
+	nodenames = {"default:torch"},
+	interval = 1,
+	chance = 1,
+	action = function(pos)
+		local n = minetest.get_node(pos)
+		local def = minetest.registered_nodes[n.name]
+		if def then
+			local wdir = n.param2
+			if wdir == 0 then
+				minetest.remove_node(pos)
+			elseif wdir == 1 then
+				minetest.set_node(pos, {name = "torches:floor"})
+			else
+				minetest.set_node(pos, {name = "torches:wand", param2 = is_wall(wdir)})
+			end
+		end
+	end
+})
 
 --node_boxes
 minetest.register_craftitem(":default:torch", {
@@ -138,7 +150,7 @@ minetest.register_node("torches:floor", {
 	drop = "default:torch",
 	walkable = false,
 	light_source = 13,
-	groups = {choppy=2,dig_immediate=3,flammable=1,not_in_creative_inventory=1},
+	groups = {choppy=2,dig_immediate=3,flammable=1,not_in_creative_inventory=1,torch=1},
 	legacy_wallmounted = true,
 	node_box = {
 		type = "fixed",
@@ -178,7 +190,7 @@ minetest.register_node("torches:wand", {
 	sunlight_propagates = true,
 	walkable = false,
 	light_source = 13,
-	groups = {choppy=2,dig_immediate=3,flammable=1,not_in_creative_inventory=1},
+	groups = {choppy=2,dig_immediate=3,flammable=1,not_in_creative_inventory=1,torch=1},
 	legacy_wallmounted = true,
 	drop = "default:torch",
 	node_box = {
@@ -195,3 +207,12 @@ minetest.register_node("torches:wand", {
 
 
 })
+
+minetest.register_on_dignode(function(pos, oldnode, digger)
+	local p = minetest.find_node_near(pos, 1, {"group:torch"})
+	if p and p ~= nil then
+		if not check_attached_node_fdir(p, minetest.get_node(p)) then
+			minetest.dig_node(p)
+		end
+	end
+end)

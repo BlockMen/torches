@@ -1,10 +1,10 @@
 Minetest mod "Torches"
 =======================
-version: 1.2
+version: 1.3
 
 License of source code and textures: WTFPL
 -----------------------------------------
-(c) Copyright BlockMen (2013)
+(c) Copyright BlockMen (2013-2014)
 
 
 This program is free software. It comes without any warranty, to
@@ -19,7 +19,7 @@ Using the mod:
 
 This mod adds 3D torches to Minetest. They also have real flames and look much more realistic.
 
-Notice: Already placed old torches wont be changed.
+Notice: Already placed old torches will be converted to new, ceiling placed will be removed
 
 
 Changelog:
@@ -27,3 +27,7 @@ Changelog:
 - Torches on wall dont fall when node under it is dug
 - Torches fall directly when not placed on floor or wall
 - fixed different placing bugs
+
+1.3:
+- Torches only show flames when player is near (13 blocks)
+- Old torches are converted to new, ceiling torches are dropped
