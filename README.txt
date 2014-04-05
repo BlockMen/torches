@@ -1,6 +1,6 @@
 Minetest mod "Torches"
 =======================
-version: 1.3
+version: 1.3.1
 
 License of source code and textures: WTFPL
 -----------------------------------------
@@ -31,3 +31,7 @@ Changelog:
 1.3:
 - Torches only show flames when player is near (13 blocks)
 - Old torches are converted to new, ceiling torches are dropped
+
+1.3.1:
+- fix dropping torches when digging a block next to it
+- all torches attached to a block get droped when dug

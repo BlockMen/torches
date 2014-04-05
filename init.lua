@@ -163,6 +163,11 @@ minetest.register_node("torches:floor", {
 	after_dig_node = function(pos, oldnode, oldmetadata, digger)
 		if not digger:is_player() then minetest.add_item(pos, {name="default:torch"}) end
 	end,
+	update = function(pos,node, pos2)
+		if pos2.y < pos.y then
+			minetest.dig_node(pos)
+		end
+	end,
 })
 
 local wall_ndbx = {
@@ -204,15 +209,27 @@ minetest.register_node("torches:wand", {
 	after_dig_node = function(pos, oldnode, oldmetadata, digger)
 		if not digger:is_player() then minetest.add_item(pos, {name="default:torch"}) end
 	end,
+	update = function(pos,node)
+		if not check_attached_node_fdir(pos, node) then
+			minetest.dig_node(pos)
+		end
+	end,
 
 
 })
 
 minetest.register_on_dignode(function(pos, oldnode, digger)
-	local p = minetest.find_node_near(pos, 1, {"group:torch"})
-	if p and p ~= nil then
-		if not check_attached_node_fdir(p, minetest.get_node(p)) then
-			minetest.dig_node(p)
+	for ix=-1,1 do
+	for iz=-1,1 do
+	for iy=0,1 do
+		if ix ~=0 and iz ~= 0 then iy=0 end
+		local p = {x=pos.x+ix,y=pos.y+iy,z=pos.z+iz}
+		local n = minetest.get_node_or_nil(p)
+		local fd = minetest.registered_nodes[n.name].update or nil
+		if fd ~= nil then
+			fd(p, n, pos)
 		end
+	end
+	end
 	end
 end)
