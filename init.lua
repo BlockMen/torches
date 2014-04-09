@@ -1,6 +1,10 @@
 local VIEW_DISTANCE = 13 -- if player is near that distance flames are shown
 
 local null = {x=0, y=0, z=0}
+
+local dirs = {{-1,0,-1},{-1,0,0},{0,0,-1},
+{1,0,1},{1,0,0},{0,0,1},{0,1,0}}
+
 --fire_particles
 local function add_fire(pos)
 	pos.y = pos.y+0.19
@@ -119,9 +123,11 @@ minetest.register_craftitem(":default:torch", {
 		local under = pointed_thing.under
 		local wdir = minetest.dir_to_wallmounted({x = under.x - above.x, y = under.y - above.y, z = under.z - above.z})
 		local u_n = minetest.get_node(under)
-		if u_n and not minetest.registered_nodes[u_n.name].walkable then above = under end
-		local u_n = minetest.get_node(above)
-		if u_n and minetest.registered_nodes[u_n.name].walkable then return itemstack end
+		local udef = minetest.registered_nodes[u_n.name]
+		if u_n and udef and not udef.walkable then above = under end
+		u_n = minetest.get_node(above)
+		udef = minetest.registered_nodes[u_n.name]
+		if u_n and udef and udef.walkable then return itemstack end
 		if wdir == 1 then
 			minetest.env:add_node(above, {name = "torches:floor"})		
 		else
@@ -219,17 +225,16 @@ minetest.register_node("torches:wand", {
 })
 
 minetest.register_on_dignode(function(pos, oldnode, digger)
-	for ix=-1,1 do
-	for iz=-1,1 do
-	for iy=0,1 do
-		if ix ~=0 and iz ~= 0 then iy=0 end
-		local p = {x=pos.x+ix,y=pos.y+iy,z=pos.z+iz}
+	if minetest.find_node_near(pos, 1, {"group:torch"}) == nil then return end
+	for i=1,#dirs do
+		local v = dirs[i]
+		local p = {x=pos.x+v[1],y=pos.y+v[2],z=pos.z+v[3]}
 		local n = minetest.get_node_or_nil(p)
-		local fd = minetest.registered_nodes[n.name].update or nil
-		if fd ~= nil then
-			fd(p, n, pos)
+		if n and n.name then
+			local def = minetest.registered_nodes[n.name]
+			if def and def.update then
+				def.update(p, n, pos)
+			end
 		end
-	end
-	end
 	end
 end)

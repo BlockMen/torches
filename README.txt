@@ -1,6 +1,6 @@
 Minetest mod "Torches"
 =======================
-version: 1.3.1
+version: 1.3.2
 
 License of source code and textures: WTFPL
 -----------------------------------------
@@ -35,3 +35,6 @@ Changelog:
 1.3.1:
 - fix dropping torches when digging a block next to it
 - all torches attached to a block get droped when dug
+
+1.3.2:
+- fix crashes by unknown nodes
