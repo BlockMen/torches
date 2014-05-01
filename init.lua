@@ -1,3 +1,11 @@
+-- Reduce particles send to client if on Server
+local SERVER = minetest.is_singleplayer() or false
+SERVER = not SERVER
+local dur = 0
+if SERVER then
+	dur = 8 --too high??
+end
+
 local VIEW_DISTANCE = 13 -- if player is near that distance flames are shown
 
 local null = {x=0, y=0, z=0}
@@ -6,12 +14,15 @@ local dirs = {{-1,0,-1},{-1,0,0},{0,0,-1},
 {1,0,1},{1,0,0},{0,0,1},{0,1,0}}
 
 --fire_particles
-local function add_fire(pos)
+local function add_fire(pos, duration)
+	if duration < 1 then
+		duration = 1.1
+	end
 	pos.y = pos.y+0.19
-	minetest.add_particle(pos, null, null, 1.1,
+	minetest.add_particle(pos, null, null, duration,
    					1.5, true, "torches_fire"..tostring(math.random(1,2)) ..".png")
 	pos.y = pos.y +0.01
-	minetest.add_particle(pos, null, null, 0.8,
+	minetest.add_particle(pos, null, null, duration-0.3,
    					1.5, true, "torches_fire"..tostring(math.random(1,2)) ..".png")
 end
 
@@ -67,22 +78,22 @@ end
 -- abms for flames
 minetest.register_abm({
 	nodenames = {"torches:wand"},
-	interval = 1,
+	interval = 1+dur,
 	chance = 1,
 	action = function(pos)
 		if player_near(pos) then
-			add_fire(pos)
+			add_fire(pos, dur)
 		end
 	end
 })
 
 minetest.register_abm({
 	nodenames = {"torches:floor"},
-	interval = 1,
+	interval = 1+dur,
 	chance = 1,
 	action = function(pos)
 		if player_near(pos) then
-			add_fire(pos)
+			add_fire(pos, dur)
 		end
 	end
 })
@@ -136,6 +147,7 @@ minetest.register_craftitem(":default:torch", {
 		if not wdir == 0 or not minetest.setting_getbool("creative_mode") then
 			itemstack:take_item()
 		end
+		add_fire(above, dur)
 		return itemstack
 		
 	end
