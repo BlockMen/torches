@@ -1,6 +1,6 @@
 Minetest mod "Torches"
 =======================
-version: 1.3.2
+version: 2.0
 
 License of source code and textures: WTFPL
 -----------------------------------------
@@ -38,3 +38,8 @@ Changelog:
 
 1.3.2:
 - fix crashes by unknown nodes
+
+2.0:
+- Use new mesh drawtype to improve wallmounted torches
+- Update particle usage
+- New textures

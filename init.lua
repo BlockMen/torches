@@ -8,22 +8,39 @@ end
 
 local VIEW_DISTANCE = 13 -- if player is near that distance flames are shown
 
-local null = {x=0, y=0, z=0}
-
 local dirs = {{-1,0,-1},{-1,0,0},{0,0,-1},
 {1,0,1},{1,0,0},{0,0,1},{0,1,0}}
 
+local particle_def = {
+    pos = {x=0, y=0, z=0},
+    velocity = {x=0, y=0, z=0},
+    acceleration = {x=0, y=0, z=0},
+    expirationtime = 1,
+    size = 1.5,
+    collisiondetection = true,
+    vertical = false,
+    texture = "torches_fire_1.png",
+}
+
 --fire_particles
-local function add_fire(pos, duration)
+local function add_fire(pos, duration, offset)
 	if duration < 1 then
 		duration = 1.1
 	end
+	if offset then
+		pos.x = pos.x + offset.x
+		pos.z = pos.z + offset.z
+	end
 	pos.y = pos.y+0.19
-	minetest.add_particle(pos, null, null, duration,
-   					3.0, true, "torches_fire"..tostring(math.random(1,2)) ..".png")
+	particle_def.pos = pos
+	particle_def.expirationtime = duration
+	particle_def.texture = "torches_fire"..tostring(math.random(1,2)) ..".png"
+	minetest.add_particle(particle_def)
+
 	pos.y = pos.y +0.01
-	minetest.add_particle(pos, null, null, duration-0.3,
-   					3.0, true, "torches_fire"..tostring(math.random(1,2)) ..".png")
+	particle_def.pos = pos
+	particle_def.texture = "torches_fire"..tostring(math.random(1,2)) ..".png"
+	minetest.add_particle(particle_def)
 end
 
 --help functions
@@ -75,6 +92,22 @@ local function player_near(pos)
 	return false
 end
 
+local function get_offset(fdir)
+	local z = 0
+	local x = 0
+	if fdir == 0 then
+		z = 0.15
+	elseif fdir == 1 then
+		x = 0.15
+	elseif fdir == 2 then
+		z = -0.15
+	elseif fdir == 3 then
+		x = -0.15
+	end
+	return {x=x, y=-0.06, z=z}
+		
+end
+
 -- abms for flames
 minetest.register_abm({
 	nodenames = {"torches:wand"},
@@ -82,7 +115,12 @@ minetest.register_abm({
 	chance = 1,
 	action = function(pos)
 		if player_near(pos) then
-			add_fire(pos, dur)
+			local n = minetest.get_node_or_nil(pos)
+			dir = {x=0,y=0,z=0}
+			if n and n.param2 then
+				dir = get_offset(n.param2)
+			end
+			add_fire(pos, dur, dir)
 		end
 	end
 })
@@ -122,8 +160,8 @@ minetest.register_abm({
 --node_boxes
 minetest.register_craftitem(":default:torch", {
 	description = "Torch",
-	inventory_image = "torches_torch.png",
-	wield_image = "torches_torch.png",
+	inventory_image = "torches_torch.png^[transformR90",
+	wield_image = "torches_torch.png^[transformR90",
 	wield_scale = {x=1,y=1,z=1+1/16},
 	liquids_pointable = false,
    	on_place = function(itemstack, placer, pointed_thing)
@@ -139,15 +177,20 @@ minetest.register_craftitem(":default:torch", {
 		u_n = minetest.get_node(above)
 		udef = minetest.registered_nodes[u_n.name]
 		if u_n and udef and udef.walkable then return itemstack end
+		local fdir = nil
 		if wdir == 1 then
-			minetest.env:add_node(above, {name = "torches:floor"})		
+			minetest.add_node(above, {name = "torches:floor"})		
 		else
-			minetest.env:add_node(above, {name = "torches:wand", param2 = is_wall(wdir)})
+			fdir = is_wall(wdir)
+			minetest.add_node(above, {name = "torches:wand", param2 = fdir})
+			fdir = get_offset(fdir)
 		end
 		if not wdir == 0 or not minetest.setting_getbool("creative_mode") then
 			itemstack:take_item()
 		end
-		add_fire(above, dur)
+		--expect node switch one sever step delayed
+		minetest.after(0.1, add_fire, above, dur, fdir)
+
 		return itemstack
 		
 	end
@@ -159,9 +202,9 @@ minetest.register_node("torches:floor", {
 	inventory_image = "default_torch.png",
 	wield_image = "torches_torch.png",
 	wield_scale = {x=1,y=1,z=1+2/16},
-	drawtype = "nodebox",
-	tiles = {"torches_torch.png^[transformfy", "default_wood.png", "torches_torch.png",
-		"torches_torch.png^[transformfx", "torches_torch.png", "torches_torch.png"},
+	drawtype = "mesh",
+	mesh = "torch_floor.obj",
+	tiles = {"torches_torch.png"},
 	paramtype = "light",
 	paramtype2 = "none",
 	sunlight_propagates = true,
@@ -170,10 +213,6 @@ minetest.register_node("torches:floor", {
 	light_source = 13,
 	groups = {choppy=2,dig_immediate=3,flammable=1,not_in_creative_inventory=1,torch=1},
 	legacy_wallmounted = true,
-	node_box = {
-		type = "fixed",
-		fixed = {-1/16, -0.5, -1/16, 1/16, 2/16, 1/16},
-	},
 	selection_box = {
 		type = "fixed",
 		fixed = {-1/16, -0.5, -1/16, 1/16, 2/16, 1/16},
@@ -188,26 +227,14 @@ minetest.register_node("torches:floor", {
 	end,
 })
 
-local wall_ndbx = {
-			{-1/16,-6/16, 6/16, 1/16, -5/16, 0.5},
-			{-1/16,-5/16, 5/16, 1/16, -4/16, 7/16},
-			{-1/16,-4/16, 4/16, 1/16, -3/16, 6/16},
-			{-1/16,-3/16, 3/16, 1/16, -2/16, 5/16},
-			{-1/16,-2/16, 2/16, 1/16, -1/16, 4/16},
-			{-1/16,-1/16, 1/16, 1/16, 0, 3/16},
-			{-1/16,0, 1/16, 1/16, 1/16, 2/16},
-			{-1/16, 0, -1/16, 1/16, 2/16, 1/16},
-}
-
 minetest.register_node("torches:wand", {
 	--description = "Fakel",
 	inventory_image = "default_torch.png",
 	wield_image = "torches_torch.png",
 	wield_scale = {x=1,y=1,z=1+1/16},
-	drawtype = "nodebox",
-	tiles = {"torches_torch.png^[transformfy", "default_wood.png", "torches_side.png",
-		"torches_side.png^[transformfx", "default_wood.png", "torches_torch.png"},
-
+	drawtype = "mesh",
+	mesh = "torch_wall.obj",
+	tiles = {"torches_torch.png"},
 	paramtype = "light",
 	paramtype2 = "facedir",
 	sunlight_propagates = true,
@@ -216,10 +243,6 @@ minetest.register_node("torches:wand", {
 	groups = {choppy=2,dig_immediate=3,flammable=1,not_in_creative_inventory=1,torch=1},
 	legacy_wallmounted = true,
 	drop = "default:torch",
-	node_box = {
-		type = "fixed",
-		fixed =	wall_ndbx
-	},
 	selection_box = {
 		type = "fixed",
 		fixed =	{-1/16, -6/16, 7/16, 1/16, 2/16, 2/16},
