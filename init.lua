@@ -20,10 +20,10 @@ local function add_fire(pos, duration)
 	end
 	pos.y = pos.y+0.19
 	minetest.add_particle(pos, null, null, duration,
-   					1.5, true, "torches_fire"..tostring(math.random(1,2)) ..".png")
+   					3.0, true, "torches_fire"..tostring(math.random(1,2)) ..".png")
 	pos.y = pos.y +0.01
 	minetest.add_particle(pos, null, null, duration-0.3,
-   					1.5, true, "torches_fire"..tostring(math.random(1,2)) ..".png")
+   					3.0, true, "torches_fire"..tostring(math.random(1,2)) ..".png")
 end
 
 --help functions
