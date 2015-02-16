@@ -1,12 +1,12 @@
 -- Reduce particles send to client if on Server
 local SERVER = minetest.is_singleplayer() or false
 SERVER = not SERVER
-local dur = 0
+local dur = 2
 if SERVER then
-	dur = 8 -- lowering sends more pakets to clients and let flames faster disappear (not recommended)
+	dur = 9 -- lowering sends more pakets to clients and let flames faster disappear (not recommended)
 end
 
-local VIEW_DISTANCE = 13 -- only if player is near that distance flames are shown
+local VIEW_DISTANCE = 13 -- from what distance (in nodes) flames are send to player/client
 
 local dirs = {
 	{-1,0,-1}, {-1,0,0}, {0,0,-1},
@@ -28,9 +28,9 @@ local particle_def = {
 
 --fire_particles
 local function add_fire(pos, duration, offset)
-	if duration < 1 then
-		duration = 1.1
-	end
+	--if duration <= 1 then
+	--	duration = 1
+	--end
 	if offset then
 		pos.x = pos.x + offset.x
 		pos.z = pos.z + offset.z
@@ -115,7 +115,7 @@ end
 -- abms for flames
 minetest.register_abm({
 	nodenames = {"torches:wand"},
-	interval = 1+dur,
+	interval = dur - 1,
 	chance = 1,
 	action = function(pos)
 		if player_near(pos) then
@@ -124,18 +124,18 @@ minetest.register_abm({
 			if n and n.param2 then
 				dir = get_offset(n.param2)
 			end
-			add_fire(pos, dur, dir)
+			add_fire(pos, dur - .9, dir)
 		end
 	end
 })
 
 minetest.register_abm({
 	nodenames = {"torches:floor"},
-	interval = 1 + dur,
+	interval = dur - 1,
 	chance = 1,
 	action = function(pos)
 		if player_near(pos) then
-			add_fire(pos, dur)
+			add_fire(pos, dur - .9)
 		end
 	end
 })
@@ -169,14 +169,28 @@ minetest.register_craftitem(":default:torch", {
 	wield_scale = {x = 1, y = 1, z = 1 + 1/16},
 	liquids_pointable = false,
    	on_place = function(itemstack, placer, pointed_thing)
-		if pointed_thing.type ~= "node" or string.find(minetest.get_node(pointed_thing.above).name, "torch") then
+		if pointed_thing.type ~= "node" then
 			return itemstack
 		end
+
 		local above = pointed_thing.above
 		local under = pointed_thing.under
 		local wdir = minetest.dir_to_wallmounted({x = under.x - above.x, y = under.y - above.y, z = under.z - above.z})
 		local u_n = minetest.get_node(under)
+		local a_n = minetest.get_node(above)
+
+		if string.find(u_n.name, "torch") or string.find(a_n.name, "torch") then
+			return itemstack
+		end
 		local udef = minetest.registered_nodes[u_n.name]
+
+		-- check for on_rightclick (like doors)
+		if not placer:get_player_control().sneak then
+			if u_n and udef and udef.on_rightclick then
+				return udef.on_rightclick(under, u_n, placer, itemstack, pointed_thing) or itemstack
+			end
+		end
+
 		if u_n and udef and not udef.walkable then above = under end
 		u_n = minetest.get_node(above)
 		udef = minetest.registered_nodes[u_n.name]
@@ -192,13 +206,11 @@ minetest.register_craftitem(":default:torch", {
 		if not wdir == 0 or not minetest.setting_getbool("creative_mode") then
 			itemstack:take_item()
 		end
-		--expect node switch one sever step delayed
+		--expect node switch one sever step (default 0.1) delayed
 		minetest.after(0.1, add_fire, above, dur, fdir)
 
 		return itemstack
-		
 	end
-
 })
 
 minetest.register_node("torches:floor", {
@@ -257,8 +269,6 @@ minetest.register_node("torches:wand", {
 			minetest.dig_node(pos)
 		end
 	end,
-
-
 })
 
 minetest.register_on_dignode(function(pos, oldnode, digger)
