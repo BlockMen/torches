@@ -4,7 +4,7 @@ version: 2.0
 
 License of source code and textures: WTFPL
 -----------------------------------------
-(c) Copyright BlockMen (2013-2014)
+(c) Copyright BlockMen (2013-2015)
 
 
 This program is free software. It comes without any warranty, to
@@ -16,10 +16,11 @@ http://sam.zoy.org/wtfpl/COPYING for more details.
 
 Using the mod:
 --------------
-
-This mod adds 3D torches to Minetest. They also have real flames and look much more realistic.
-
+This mod adds 3D torches to Minetest. They also have "real" flames and look much more realistic.
 Notice: Already placed old torches will be converted to new, ceiling placed will be removed
+
+
+!! Warning: Extensive use (like a few dozen per mapblock [16x16x16 nodes]) can slowdown servers.
 
 
 Changelog:
@@ -42,4 +43,5 @@ Changelog:
 2.0:
 - Use new mesh drawtype to improve wallmounted torches
 - Update particle usage
-- New textures
+- New textures; flame texture fix by Yepoleb
+- Fix for doors, chests, etc (rightclick support)
