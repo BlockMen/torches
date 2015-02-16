@@ -13,6 +13,8 @@ local dirs = {
 	{1,0,1}, {1,0,0}, {0,0,1}, {0,1,0}
 }
 
+local rotat = {"I", "FX"}
+
 local particle_def = {
     pos = {x = 0, y = 0, z = 0},
     velocity = { x= 0, y = 0, z = 0},
@@ -36,12 +38,12 @@ local function add_fire(pos, duration, offset)
 	pos.y = pos.y + 0.19
 	particle_def.pos = pos
 	particle_def.expirationtime = duration
-	particle_def.texture = "torches_fire"..tostring(math.random(1, 2)) ..".png"
+	particle_def.texture = "torches_fire"..tostring(math.random(1, 2)) ..".png^[transform"..rotat[math.random(1,2)]
 	minetest.add_particle(particle_def)
 
 	pos.y = pos.y + 0.01
 	particle_def.pos = pos
-	particle_def.texture = "torches_fire"..tostring(math.random(1, 2)) ..".png"
+	particle_def.texture = "torches_fire"..tostring(math.random(1, 2)) ..".png^[transform"..rotat[math.random(1,2)]
 	minetest.add_particle(particle_def)
 end
 
