@@ -18,7 +18,7 @@ local particle_def = {
     velocity = { x= 0, y = 0, z = 0},
     acceleration = {x = 0, y = 0, z = 0},
     expirationtime = 1,
-    size = 1.5,
+    size = 3.0,
     collisiondetection = true,
     vertical = false,
     texture = "torches_fire_1.png",
