@@ -3,18 +3,20 @@ local SERVER = minetest.is_singleplayer() or false
 SERVER = not SERVER
 local dur = 0
 if SERVER then
-	dur = 8 --too high??
+	dur = 8 -- lowering sends more pakets to clients and let flames faster disappear (not recommended)
 end
 
-local VIEW_DISTANCE = 13 -- if player is near that distance flames are shown
+local VIEW_DISTANCE = 13 -- only if player is near that distance flames are shown
 
-local dirs = {{-1,0,-1},{-1,0,0},{0,0,-1},
-{1,0,1},{1,0,0},{0,0,1},{0,1,0}}
+local dirs = {
+	{-1,0,-1}, {-1,0,0}, {0,0,-1},
+	{1,0,1}, {1,0,0}, {0,0,1}, {0,1,0}
+}
 
 local particle_def = {
-    pos = {x=0, y=0, z=0},
-    velocity = {x=0, y=0, z=0},
-    acceleration = {x=0, y=0, z=0},
+    pos = {x = 0, y = 0, z = 0},
+    velocity = { x= 0, y = 0, z = 0},
+    acceleration = {x = 0, y = 0, z = 0},
     expirationtime = 1,
     size = 1.5,
     collisiondetection = true,
@@ -31,23 +33,23 @@ local function add_fire(pos, duration, offset)
 		pos.x = pos.x + offset.x
 		pos.z = pos.z + offset.z
 	end
-	pos.y = pos.y+0.19
+	pos.y = pos.y + 0.19
 	particle_def.pos = pos
 	particle_def.expirationtime = duration
-	particle_def.texture = "torches_fire"..tostring(math.random(1,2)) ..".png"
+	particle_def.texture = "torches_fire"..tostring(math.random(1, 2)) ..".png"
 	minetest.add_particle(particle_def)
 
-	pos.y = pos.y +0.01
+	pos.y = pos.y + 0.01
 	particle_def.pos = pos
-	particle_def.texture = "torches_fire"..tostring(math.random(1,2)) ..".png"
+	particle_def.texture = "torches_fire"..tostring(math.random(1, 2)) ..".png"
 	minetest.add_particle(particle_def)
 end
 
 --help functions
 function check_attached_node_fdir(p, n)
-	local def = minetest.registered_nodes[n.name]
-	local d = {x=0, y=0, z=0}
-	if def.paramtype2 == "facedir" then
+	local def = minetest.registered_nodes[n.name] or nil
+	local d = {x = 0, y = 0, z = 0}
+	if def and def.paramtype2 == "facedir" then
 		if n.param2 == 0 then
 			d.z = 1
 		elseif n.param2 == 1 then
@@ -58,8 +60,8 @@ function check_attached_node_fdir(p, n)
 			d.x = -1
 		end
 	end
-	local p2 = {x=p.x+d.x, y=p.y+d.y, z=p.z+d.z}
-	local nn = minetest.env:get_node(p2).name
+	local p2 = {x = p.x + d.x, y = p.y + d.y, z = p.z + d.z}
+	local nn = minetest.get_node(p2).name
 	local def2 = minetest.registered_nodes[nn]
 	if def2 and not def2.walkable then
 		return false
@@ -83,7 +85,7 @@ local function is_wall(wallparam)
 end
 
 local function player_near(pos)
-	for  _,object in ipairs(minetest.env:get_objects_inside_radius(pos, VIEW_DISTANCE)) do
+	for  _,object in ipairs(minetest.get_objects_inside_radius(pos, VIEW_DISTANCE)) do
 		if object:is_player() then
 			return true
 		end
@@ -104,7 +106,7 @@ local function get_offset(fdir)
 	elseif fdir == 3 then
 		x = -0.15
 	end
-	return {x=x, y=-0.06, z=z}
+	return {x = x, y = -0.06, z = z}
 		
 end
 
@@ -116,7 +118,7 @@ minetest.register_abm({
 	action = function(pos)
 		if player_near(pos) then
 			local n = minetest.get_node_or_nil(pos)
-			dir = {x=0,y=0,z=0}
+			local dir = {x = 0, y = 0, z = 0}
 			if n and n.param2 then
 				dir = get_offset(n.param2)
 			end
@@ -127,7 +129,7 @@ minetest.register_abm({
 
 minetest.register_abm({
 	nodenames = {"torches:floor"},
-	interval = 1+dur,
+	interval = 1 + dur,
 	chance = 1,
 	action = function(pos)
 		if player_near(pos) then
@@ -162,10 +164,10 @@ minetest.register_craftitem(":default:torch", {
 	description = "Torch",
 	inventory_image = "torches_torch.png^[transformR90",
 	wield_image = "torches_torch.png^[transformR90",
-	wield_scale = {x=1,y=1,z=1+1/16},
+	wield_scale = {x = 1, y = 1, z = 1 + 1/16},
 	liquids_pointable = false,
    	on_place = function(itemstack, placer, pointed_thing)
-		if pointed_thing.type ~= "node" or string.find(minetest.env:get_node(pointed_thing.above).name, "torch") then
+		if pointed_thing.type ~= "node" or string.find(minetest.get_node(pointed_thing.above).name, "torch") then
 			return itemstack
 		end
 		local above = pointed_thing.above
@@ -198,10 +200,9 @@ minetest.register_craftitem(":default:torch", {
 })
 
 minetest.register_node("torches:floor", {
-	--description = "Fakel",
 	inventory_image = "default_torch.png",
 	wield_image = "torches_torch.png",
-	wield_scale = {x=1,y=1,z=1+2/16},
+	wield_scale = {x = 1, y = 1, z = 1 + 2/16},
 	drawtype = "mesh",
 	mesh = "torch_floor.obj",
 	tiles = {"torches_torch.png"},
@@ -220,7 +221,7 @@ minetest.register_node("torches:floor", {
 	after_dig_node = function(pos, oldnode, oldmetadata, digger)
 		if not digger:is_player() then minetest.add_item(pos, {name="default:torch"}) end
 	end,
-	update = function(pos,node, pos2)
+	update = function(pos, node, pos2)
 		if pos2.y < pos.y then
 			minetest.dig_node(pos)
 		end
@@ -228,10 +229,9 @@ minetest.register_node("torches:floor", {
 })
 
 minetest.register_node("torches:wand", {
-	--description = "Fakel",
 	inventory_image = "default_torch.png",
 	wield_image = "torches_torch.png",
-	wield_scale = {x=1,y=1,z=1+1/16},
+	wield_scale = {x = 1, y = 1, z = 1 + 1/16},
 	drawtype = "mesh",
 	mesh = "torch_wall.obj",
 	tiles = {"torches_torch.png"},
@@ -250,7 +250,7 @@ minetest.register_node("torches:wand", {
 	after_dig_node = function(pos, oldnode, oldmetadata, digger)
 		if not digger:is_player() then minetest.add_item(pos, {name="default:torch"}) end
 	end,
-	update = function(pos,node)
+	update = function(pos, node)
 		if not check_attached_node_fdir(pos, node) then
 			minetest.dig_node(pos)
 		end
@@ -261,9 +261,9 @@ minetest.register_node("torches:wand", {
 
 minetest.register_on_dignode(function(pos, oldnode, digger)
 	if minetest.find_node_near(pos, 1, {"group:torch"}) == nil then return end
-	for i=1,#dirs do
+	for i = 1, #dirs do
 		local v = dirs[i]
-		local p = {x=pos.x+v[1],y=pos.y+v[2],z=pos.z+v[3]}
+		local p = {x = pos.x + v[1], y = pos.y + v[2], z = pos.z + v[3]}
 		local n = minetest.get_node_or_nil(p)
 		if n and n.name then
 			local def = minetest.registered_nodes[n.name]
