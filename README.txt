@@ -1,9 +1,9 @@
 Minetest mod "Torches"
-=======================
-version: 2.0
+======================
+version: 2.1
 
 License of source code and textures: WTFPL
------------------------------------------
+------------------------------------------
 (c) Copyright BlockMen (2013-2015)
 
 
@@ -45,3 +45,8 @@ Changelog:
 - Update particle usage
 - New textures; flame texture fix by Yepoleb
 - Fix for doors, chests, etc (rightclick support)
+
+2.1
+- Fix wallmounted torch mesh
+- Clean up code, use wallmounted paramtype2
+- Fix torches being placeable on ceilings (reported by kilbith)
