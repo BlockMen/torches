@@ -30,16 +30,20 @@ License:
 ~~~~~~~~
 (c) Copyright BlockMen (2013-2015)
 
-Code:
-WTFPL
-This program is free software. It comes without any warranty, to
-the extent permitted by applicable law. You can redistribute it
-and/or modify it under the terms of the Do What The Fuck You Want
-To Public License, Version 2, as published by Sam Hocevar. See
-http://sam.zoy.org/wtfpl/COPYING for more details.
-
 Textures and Meshes/Models:
 CC-BY 3.0 BlockMen
+
+Code:
+Licensed under the GNU LGPL version 2.1 or higher.
+You can redistribute it and/or modify it under 
+the terms of the GNU Lesser General Public License 
+as published by the Free Software Foundation;
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+See LICENSE.txt and http://www.gnu.org/licenses/lgpl-2.1.txt
 
 
 Github:
