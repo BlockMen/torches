@@ -8,7 +8,8 @@ minetest.register_craftitem(":default:torch", {
 		local above = pointed_thing.above
 		local under = pointed_thing.under
 		local wdir = minetest.dir_to_wallmounted({x = under.x - above.x, y = under.y - above.y, z = under.z - above.z})
-		if wdir < 1 and not torches.enable_ceiling then
+		if (wdir < 1 and not torches.enable_ceiling) 
+		or iswet(above) then
 			return itemstack
 		end
 		local fakestack = itemstack
