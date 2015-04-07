@@ -134,7 +134,8 @@ minetest.register_craftitem(":default:torch", {
 
 		local fakestack = itemstack
 		local retval = false
-		if wdir < 1 then
+		if wdir < 1 or 
+		or iswet(above) then
 			return itemstack
 		elseif wdir == 1 then
 			retval = fakestack:set_name("torches:floor")
