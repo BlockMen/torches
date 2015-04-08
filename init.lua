@@ -18,17 +18,12 @@ function iswater (pos)
 	return false
 end
 function iswet (pos)
-	local p0 = pos
-	local p1 = {x = p0.x - 1, y = p0.y - 0.5, z = p0.z}
-	local p2 = {x = p0.x + 1, y = p0.y - 0.5, z = p0.z}
-	local p3 = {x = p0.x, y = p0.y - 0.5, z = p0.z + 1}
-	local p4 = {x = p0.x, y = p0.y - 0.5, z = p0.z - 1}
-	if iswater(p0) == true
-	or iswater(p1) == true
-	or iswater(p2) == true
-	or iswater(p3) == true
-	or iswater(p4) == true then	
-		return true -- is wet
-	end
-	return false 	-- all dry
+	local pi = pos
+	local p0 = {x = pos.x, y = pos.y + 1, z = pos.z}
+	local p1 = {x = pos.x - 1, y = pos.y, z = pos.z}
+	local p2 = {x = pos.x + 1, y = pos.y, z = pos.z}
+	local p3 = {x = pos.x, y = pos.y, z = pos.z + 1}
+	local p4 = {x = pos.x, y = pos.y, z = pos.z - 1}
+	-- returns true if it's wet around pos
+	return iswater(pi) or iswater(p0) or iswater(p1) or iswater(p2) or iswater(p3) or iswater(p4)
 end
