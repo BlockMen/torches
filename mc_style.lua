@@ -127,30 +127,29 @@ minetest.register_craftitem(":default:torch", {
 		if pointed_thing.type ~= "node" then
 			return itemstack
 		end
-
 		local above = pointed_thing.above
 		local under = pointed_thing.under
 		local wdir = minetest.dir_to_wallmounted({x = under.x - above.x, y = under.y - above.y, z = under.z - above.z})
-
 		local fakestack = itemstack
 		local retval = false
-		if wdir < 1 then
-			return itemstack
-		elseif wdir == 1 then
-			retval = fakestack:set_name("torches:floor")
-		else
-			retval = fakestack:set_name("torches:wall")
-		end
-		if not retval then
-			return itemstack
-		end
-		itemstack, retval = minetest.item_place(fakestack, placer, pointed_thing, wdir)
-		itemstack:set_name("default:torch")
-
-		-- add flame if placing was sucessfull
-		if retval then
-			-- expect node switch one sever step (default 0.1) delayed
-			minetest.after(0.1, add_fire, above, dur, get_offset(wdir))
+		if wdir >= 1 then
+			if iswet(pointed_thing.above) then
+				minetest.add_item(pointed_thing.above,"default:torch 1")
+				itemstack:take_item()
+			else
+				if wdir == 1 then
+					retval = fakestack:set_name("torches:floor")
+				else
+					retval = fakestack:set_name("torches:wall")
+				end
+				itemstack, retval = minetest.item_place(fakestack, placer, pointed_thing, wdir)
+				itemstack:set_name("default:torch")
+				-- add flame if placing was sucessfull
+				if retval then
+					-- expect node switch one sever step (default 0.1) delayed
+					minetest.after(0.1, add_fire, above, dur, get_offset(wdir))
+				end
+			end
 		end
 		return itemstack
 	end
