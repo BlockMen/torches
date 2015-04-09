@@ -14,7 +14,7 @@ end
 -- functions to detect placing in water
 function iswater (pos)
 	local n = minetest.get_node(pos)
-	if minetest.get_item_group(n.name, "water") ~= 0 then return true end --is water
+	if (minetest.get_item_group(n.name, "water") ~= 0 and n.param2 > 0) then return true end
 	return false
 end
 function iswet (pos)
