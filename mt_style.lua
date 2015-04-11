@@ -17,9 +17,10 @@ minetest.register_craftitem(":default:torch", {
 			minetest.add_item(pointed_thing.above,"default:torch 1") -- spawn droped torch
 			itemstack:take_item() -- and remove 1 item from inventory
 		else	-- else block is good, so go on
-			retval = fakestack:set_name("torches:wall")
 			if wdir <= 1 then
 				retval = fakestack:set_name("torches:floor")
+			else
+				retval = fakestack:set_name("torches:wall")
 			end
 			itemstack, retval = minetest.item_place(fakestack, placer, pointed_thing, dir)
 			itemstack:set_name("default:torch")
