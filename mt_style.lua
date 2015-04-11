@@ -13,17 +13,18 @@ minetest.register_craftitem(":default:torch", {
 		end
 		local fakestack = itemstack
 		local retval = false
-		if wdir <= 1 then
-			retval = fakestack:set_name("torches:floor")
-		else
-			retval = fakestack:set_name("torches:wall")
+		if iswet(pointed_thing.above) then -- if liquid detected...
+			minetest.add_item(pointed_thing.above,"default:torch 1") -- spawn droped torch
+			itemstack:take_item() -- and remove 1 item from inventory
+		else	-- else block is good, so go on
+			if wdir <= 1 then
+				retval = fakestack:set_name("torches:floor")
+			else
+				retval = fakestack:set_name("torches:wall")
+			end
+			itemstack, retval = minetest.item_place(fakestack, placer, pointed_thing, dir)
+			itemstack:set_name("default:torch")
 		end
-		if not retval then
-			return itemstack
-		end
-		itemstack, retval = minetest.item_place(fakestack, placer, pointed_thing, dir)
-		itemstack:set_name("default:torch")
-
 		return itemstack
 	end
 })
