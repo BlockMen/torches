@@ -21,7 +21,7 @@ minetest.register_craftitem(":default:torch", {
 		if not retval then
 			return itemstack
 		end
-		itemstack, retval = minetest.item_place(fakestack, placer, pointed_thing, dir)
+		itemstack, retval = minetest.item_place(fakestack, placer, pointed_thing, wdir)
 		itemstack:set_name("default:torch")
 
 		return itemstack
