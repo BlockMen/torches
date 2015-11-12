@@ -32,3 +32,6 @@ Changelog:
 - style can be changed via settings
 - using Minetest style allows ceiling torches via settings
 - Minetest style supports all texturepacks (as long torch shaped)
+
+3.0.1
+- Fix global variable that caused rarely placing issues (thanks to tchncs for pointing out)

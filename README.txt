@@ -1,6 +1,6 @@
 Minetest mod "Torches"
 ======================
-Version: 3.0
+Version: 3.0.1
 
 (c) Copyright BlockMen (2013-2015)
 
