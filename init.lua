@@ -1,6 +1,6 @@
 torches = {}
-torches.enable_ceiling = minetest.setting_getbool("torches_enable_ceiling") or false
-local style = minetest.setting_get("torches_style")
+torches.enable_ceiling = minetest.settings:get_bool("torches_enable_ceiling") or false
+local style = minetest.settings:get("torches_style")
 
 local modpath = minetest.get_modpath("torches")
 
