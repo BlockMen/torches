@@ -22,7 +22,10 @@ minetest.register_craftitem(":default:torch", {
 			return itemstack
 		end
 		itemstack, retval = minetest.item_place(fakestack, placer, pointed_thing, wdir)
-		itemstack:set_name("default:torch")
+		if itemstack then
+			itemstack:set_name("default:torch")
+		-- else, ignore - placing not allowed here
+		end
 
 		return itemstack
 	end
